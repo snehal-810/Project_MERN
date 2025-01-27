@@ -226,4 +226,45 @@ router.get("/show-subjects/:course_name", authorizeRole(["admin"]),(request, res
   });
 });
 
+// Add Group
+router.post(
+  "/add-group",
+  authorizeRole(["admin"]),
+  async (request, response) => {
+    const { course_name, group_name } = request.body;
+
+    // Find course_id corresponding to the given course_name
+    const findCourseIdStatement = `SELECT course_id FROM ${COURSE_TABLE} WHERE course_name = ?`;
+    db.execute(findCourseIdStatement, [course_name], async (error, results) => {
+      if (error) {
+        response.send(utils.createErrorResponse(error));
+        return;
+      }
+
+      if (results.length === 0) {
+        response.send(utils.createErrorResponse("Course not found"));
+        return;
+      }
+
+      const course_id = results[0].course_id;
+
+      // Insert the group into the group_table
+      const insertGroupStatement = `INSERT INTO ${GROUP_TABLE} (course_id, group_name) VALUES (?, ?)`;
+      db.execute(
+        insertGroupStatement,
+        [course_id, group_name],
+        (error, result) => {
+          if (error) {
+            response.send(utils.createErrorResponse(error));
+          } else {
+            response.send(
+              utils.createSuccessResponse("Group added successfully!")
+            );
+          }
+        }
+      );
+    });
+  }
+);
+
   module.exports = router;
