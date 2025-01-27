@@ -149,4 +149,44 @@ router.get("/show-courses", authorizeRole(["admin"]), (request, response) => {
   });
 });
 
+// ADDING SUBJECT TO A COURSE
+router.post("/add-subject", authorizeRole(["admin"]), (request, response) => {
+  const { subject_name, course_name } = request.body;
+
+  // Query to find the course_id based on course_name
+  const findCourseStatement = `SELECT course_id FROM ${COURSE_TABLE} WHERE course_name = ?`;
+
+  db.execute(findCourseStatement, [course_name], (error, courseResults) => {
+    if (error) {
+      console.error("Error finding course:", error);
+      response.status(500).send(utils.createErrorResponse(error.message));
+      return;
+    }
+
+    if (courseResults.length === 0) {
+      // If course not found, send an appropriate response
+      response.status(404).send(utils.createErrorResponse("Course not found"));
+      return;
+    }
+
+    const course_id = courseResults[0].course_id;
+
+    // Query to insert the subject with the retrieved course_id
+    const insertStatement = `INSERT INTO ${SUBJECT_TABLE} 
+        (subject_name, course_id)
+        VALUES  (?, ?)`;
+
+    db.execute(insertStatement, [subject_name, course_id], (error, result) => {
+      if (error) {
+        console.error("Error adding subject:", error);
+        response.status(500).send(utils.createErrorResponse(error.message));
+      } else {
+        response.send(
+          utils.createSuccessResponse("Subject added successfully")
+        );
+      }
+    });
+  });
+});
+
   module.exports = router;
