@@ -307,4 +307,26 @@ router.get("/show-groups", authorizeRole(["admin"]), (request, response) =>{
   });
 });
 
+//! STUDENT RELATED APIs
+// SHOW ALL STUDENTS (WHICH ARE NOT PRESENT IN ANY COURSE AND ANY GROUP)
+router.get(
+  "/show-all-students",
+  authorizeRole(["admin"]),
+  (request, response) => {
+    const statement = `
+  SELECT student_id, roll_number, student_name, email 
+  FROM ${STUDENT_TABLE} 
+  WHERE course_id IS NULL AND group_id IS NULL
+`;
+
+    db.execute(statement, (error, result) => {
+      if (error) {
+        response.status(500).send(utils.createErrorResponse(error.message));
+      } else {
+        response.send(utils.createSuccessResponse(result));
+      }
+    });
+  }
+);
+
   module.exports = router;
