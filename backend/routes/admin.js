@@ -83,4 +83,13 @@ router.post("/login", (request, response) => {
   });
 });
 
+// GET ALL STAFF MEMBERS
+router.get("/all-staff", authorizeRole(["admin"]), (request, response) => {
+  const statement = `SELECT * FROM ${STAFF_TABLE}`;
+
+  db.execute(statement, (error, result) => {
+    response.send(utils.createResponse(error, result));
+  });
+});
+
   module.exports = router;
