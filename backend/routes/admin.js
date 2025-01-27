@@ -111,7 +111,7 @@ router.put("/update-staff-details", authorizeRole(["admin"]), (request, response
 });
 
 //! COURSE RELATED APIs
-// ADDING COURSES
+// 1. ADDING COURSES
 router.post("/add-course", authorizeRole(["admin"]), (request, response) => {
   const { course_name } = request.body;
   console.log("adding course: ", course_name);
@@ -122,6 +122,30 @@ router.post("/add-course", authorizeRole(["admin"]), (request, response) => {
 
   db.execute(statement, [course_name], (error, result) => {
     response.send(utils.createResponse(error, result));
+  });
+});
+
+// 2. SHOW ALL COURSES 
+
+router.get("/show-courses", authorizeRole(["admin"]), (request, response) => {
+  const statement = `SELECT course_id, course_name FROM ${COURSE_TABLE}`;
+
+  console.log("statement", statement);
+
+  db.execute(statement, (error, results) => {
+    if(error) {
+      const errorMessage = "Failed to fetch courses";
+      response.send(utils.createErrorResponse(errorMessage));
+      return;
+    }
+    if (results.length === 0) {
+      const errorMessage = "No courses found ";
+      response.send(utils.createErrorResponse(errorMessage));
+      return;
+    }
+    console.log("admin res ", results);
+
+    response.send(utils.createSuccessResponse(results));
   });
 });
 
