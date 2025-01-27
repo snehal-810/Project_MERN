@@ -149,7 +149,7 @@ router.get("/show-courses", authorizeRole(["admin"]), (request, response) => {
   });
 });
 
-// ADDING SUBJECT TO A COURSE
+// 3. ADDING SUBJECT TO A COURSE
 router.post("/add-subject", authorizeRole(["admin"]), (request, response) => {
   const { subject_name, course_name } = request.body;
 
@@ -184,6 +184,43 @@ router.post("/add-subject", authorizeRole(["admin"]), (request, response) => {
         response.send(
           utils.createSuccessResponse("Subject added successfully")
         );
+      }
+    });
+  });
+});
+
+// 4. SHOW ALL SUBJECTS OF A COURSE
+
+router.get("/show-subjects/:course_name", authorizeRole(["admin"]),(request, response) => {
+  const course_name = request.params.course_name;
+
+  const findCourseStatement = `SELECt course_id FROM ${COURSE_TABLE} WHERE course_name = ?`;
+
+  db.execute(findCourseStatement, [course_name], (error, courseResults) => {
+    if(error) {
+      console.error("Error finding course :", error)
+      response.status(500).send(utils.createErrorResponse(error.message))
+      return;
+    }
+
+    if(courseResults.length === 0) {
+      response
+        .status(404)
+        .send(utils.createErrorResponse("Course not found"));
+        return;
+    }
+
+    const course_id = courseResults[0].course_id;
+
+    const statement = `SELECT subject_id, subject_name FROM ${SUBJECT_TABLE} WHERE course_id = ?`;
+
+    db.execute(statement, [course_id], (error, subjectResults) => {
+      if(error) {
+        console.error("Error fetching subjects: ", error);
+        response.status(500).send(utils.createErrorResponse(error.message));
+      }
+      else {
+        response.send(utils.createSuccessResponse(subjectResults));
       }
     });
   });
