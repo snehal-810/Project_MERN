@@ -226,7 +226,7 @@ router.get("/show-subjects/:course_name", authorizeRole(["admin"]),(request, res
   });
 });
 
-// Add Group
+// 4. Add Group
 router.post(
   "/add-group",
   authorizeRole(["admin"]),
@@ -266,5 +266,45 @@ router.post(
     });
   }
 );
+
+// 5. SHOW ALL GROUPS OF THE COURSES
+
+router.get("/show-groups", authorizeRole(["admin"]), (request, response) =>{
+  
+  const { course_name} = request.query;
+
+  let query;
+  let params;
+
+  if(course_name) {
+    query =
+     `SELECT ${COURSE_TABLE}.
+     couser_name, ${GROUP_TABLE}. group_name
+     FROM ${COURSE_TABLE}
+     JOIN ${GROUP_TABLE}
+     ON ${COURSE_TABLE}.course_id = ${GROUP_TABLE}.course_id WHERE ${COURSE_TABLE}. course_name = ?;
+    `;
+    params = [course_name];
+  }
+  else {
+    query = `
+      SELECT ${COURSE_TABLE}.
+      course_name, ${GROUP_TABLE}.group_name 
+      FROM ${COURSE_TABLE}
+      JOIN ${GROUP_TABLE}
+      ON ${COURSE_TABLE}.course_id = ${GROUP_TABLE}.course_id;
+    `;
+    params = [];
+  }
+
+  db.execute(query, params, (error, results) => {
+    if(error) {
+      response.send(utils.createErrorResponse(error));
+    }
+    else {
+      response.send(utils.createSuccessResponse(results));
+    }
+  });
+});
 
   module.exports = router;
