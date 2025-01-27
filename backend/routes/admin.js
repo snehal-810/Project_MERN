@@ -92,4 +92,22 @@ router.get("/all-staff", authorizeRole(["admin"]), (request, response) => {
   });
 });
 
+// UPDATE STAFF ROLE
+
+router.put("/update-staff-details", authorizeRole(["admin"]), (request, response) => {
+  const {course_name, role, email} = request.body;
+
+  const updateQuery = `UPDATE STAFF SET course_name = ?, role = ? WHERE email = ?`;
+  
+  db.execute(updateQuery, [course_name, role, email], (error, result) =>{
+    if(error) {
+      response.status(500).json(utils.createErrorResponse(error.message));
+    }
+    else {
+      response.json(utils.createSuccessResponse("Staff details successfully")
+    );
+    };
+  });
+});
+
   module.exports = router;
