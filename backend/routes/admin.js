@@ -110,4 +110,19 @@ router.put("/update-staff-details", authorizeRole(["admin"]), (request, response
   });
 });
 
+//! COURSE RELATED APIs
+// ADDING COURSES
+router.post("/add-course", authorizeRole(["admin"]), (request, response) => {
+  const { course_name } = request.body;
+  console.log("adding course: ", course_name);
+
+  const statement = `INSERT INTO ${COURSE_TABLE} 
+    (course_name)
+    VALUES  (?)`;
+
+  db.execute(statement, [course_name], (error, result) => {
+    response.send(utils.createResponse(error, result));
+  });
+});
+
   module.exports = router;
